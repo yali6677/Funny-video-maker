@@ -291,6 +291,33 @@
         display: block;
     }
 
+    .recording-indicator {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        background: #fff3cd;
+        border-radius: 10px;
+        margin-top: 20px;
+        border: 2px solid #ffc107;
+    }
+
+    .recording-indicator.show {
+        display: block;
+    }
+
+    .recording-dot {
+        width: 12px;
+        height: 12px;
+        background: #dc3545;
+        border-radius: 50%;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
     .emoji-overlay {
         position: absolute;
         font-size: 3em;
@@ -452,6 +479,16 @@
                 ⬇️ הורד סרטון
             </button>
         </div>
+        
+        <div class="recording-indicator" id="recordingIndicator">
+            <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+                <div class="recording-dot"></div>
+                <span>מקליט וממיר את הסרטון...</span>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                זה עשוי לקחת כמה רגעים
+            </div>
+        </div>
     </div>
 </div>
 
@@ -474,6 +511,9 @@
     let videoFile = null;
     let isProcessing = false;
     let animationId = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
 
     // Upload handlers
     uploadZone.addEventListener('click', () => fileInput.click());
@@ -556,11 +596,76 @@
         canvas.height = inputVideo.videoHeight || 480;
         canvasContainer.style.display = 'block';
         
+        // Show recording indicator
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        if (recordingIndicator) {
+            recordingIndicator.classList.add('show');
+        }
+        
+        // Setup recording
+        const stream = canvas.captureStream(30); // 30 FPS
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'video/webm;codecs=vp9',
+            videoBitsPerSecond: 2500000
+        });
+        
+        recordedChunks = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+        
+        mediaRecorder.onstop = () => {
+            // Hide recording indicator
+            if (recordingIndicator) {
+                recordingIndicator.classList.remove('show');
+            }
+            
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            
+            // Show download section with video preview
+            const downloadVideo = document.createElement('video');
+            downloadVideo.src = url;
+            downloadVideo.controls = true;
+            downloadVideo.style.width = '100%';
+            downloadVideo.style.borderRadius = '10px';
+            downloadVideo.style.marginBottom = '15px';
+            
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `funny-video-${Date.now()}.webm`;
+                a.click();
+            };
+            
+            downloadSection.innerHTML = `
+                <h3 style="color: #155724; margin-bottom: 10px;">✅ הסרטון מוכן!</h3>
+                <p style="margin-bottom: 15px;">הסרטון שלך עכשיו יותר מצחיק! 🎉</p>
+            `;
+            downloadSection.appendChild(downloadVideo);
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-primary';
+            btn.innerHTML = '⬇️ הורד סרטון';
+            btn.onclick = downloadBtn.onclick;
+            downloadSection.appendChild(btn);
+            
+            downloadSection.classList.add('show');
+        };
+        
         inputVideo.currentTime = 0;
         inputVideo.play();
         
         const speed = speedSlider.value / 100;
         inputVideo.playbackRate = speed;
+        
+        // Start recording
+        mediaRecorder.start();
+        isRecording = true;
         
         renderFrame();
     }
@@ -572,7 +677,10 @@
     
     function renderFrame() {
         if (inputVideo.paused || inputVideo.ended) {
-            downloadSection.classList.add('show');
+            if (isRecording && mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                isRecording = false;
+            }
             return;
         }
 
@@ -895,15 +1003,10 @@
         particles = [];
         eyes = [];
         matrixChars = [];
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
         location.reload();
-    });
-
-    downloadBtn.addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = 'funny-video.png';
-        link.href = canvas.toDataURL();
-        link.click();
-        alert('הסרטון הושלם! 🎉\nשים לב: זוהי דמו - בגרסה מלאה ניתן להוריד את כל הסרטון.');
     });
 </script>
 ```
