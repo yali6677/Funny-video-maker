@@ -51,6 +51,10 @@
         .main-content {
             grid-template-columns: 1fr;
         }
+        
+        h1 {
+            font-size: 2em;
+        }
     }
 
     .card {
@@ -181,6 +185,7 @@
         border-radius: 50%;
         background: #f5576c;
         cursor: pointer;
+        border: none;
     }
 
     .slider-value {
@@ -212,7 +217,7 @@
         color: white;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
     }
@@ -233,12 +238,6 @@
 
     .preview-section {
         position: relative;
-    }
-
-    #outputVideo {
-        width: 100%;
-        border-radius: 10px;
-        display: none;
     }
 
     .canvas-container {
@@ -318,18 +317,6 @@
         50% { opacity: 0.5; transform: scale(1.2); }
     }
 
-    .emoji-overlay {
-        position: absolute;
-        font-size: 3em;
-        pointer-events: none;
-        animation: float 3s ease-in-out;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0) rotate(0deg); opacity: 1; }
-        50% { transform: translateY(-50px) rotate(180deg); opacity: 0.7; }
-    }
-
     .info-box {
         background: #fff3cd;
         border: 2px solid #ffc107;
@@ -346,6 +333,25 @@
     .info-box p {
         color: #856404;
         font-size: 0.9em;
+    }
+
+    .effects-section {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .effects-section::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .effects-section::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .effects-section::-webkit-scrollbar-thumb {
+        background: #f5576c;
+        border-radius: 10px;
     }
 </style>
 ```
@@ -366,11 +372,11 @@
                 <div class="upload-icon">🎥</div>
                 <h3>גרור סרטון לכאן</h3>
                 <p>או לחץ לבחירת קובץ</p>
-                <p style="color: #999; font-size: 0.9em; margin-top: 10px;">תומך ב-MP4, MOV, AVI</p>
+                <p style="color: #999; font-size: 0.9em; margin-top: 10px;">תומך ב-MP4, MOV, AVI, WebM</p>
             </div>
             <input type="file" id="fileInput" accept="video/*">
             
-            <video id="inputVideo" class="video-preview" controls></video>
+            <video id="inputVideo" class="video-preview" controls muted></video>
             
             <div class="action-buttons" style="display: none;" id="actionButtons">
                 <button class="btn btn-primary" id="processBtn" disabled>
@@ -401,7 +407,6 @@
                     <button class="effect-btn" data-effect="pixelate">🎮 פיקסלים</button>
                     <button class="effect-btn" data-effect="spin">🌀 סחרור</button>
                     <button class="effect-btn" data-effect="glitch">⚡ גליץ'</button>
-                    <button class="effect-btn" data-effect="fisheye">🐟 עין דג</button>
                     <button class="effect-btn" data-effect="warp">🌊 עיוות גלי</button>
                 </div>
             </div>
@@ -409,28 +414,20 @@
             <div class="effect-group">
                 <h3>💥 תוספות</h3>
                 <div class="effect-options">
-                    <button class="effect-btn" data-effect="emojis">😂 אימוג'ים מעופפים</button>
+                    <button class="effect-btn" data-effect="emojis">😂 אימוג'ים</button>
                     <button class="effect-btn" data-effect="explosions">💥 פיצוצים</button>
                     <button class="effect-btn" data-effect="stars">⭐ כוכבים</button>
-                    <button class="effect-btn" data-effect="text">📝 טקסט מצחיק</button>
-                    <button class="effect-btn" data-effect="memes">🤡 מימז מעופפים</button>
+                    <button class="effect-btn" data-effect="text">📝 טקסט</button>
+                    <button class="effect-btn" data-effect="memes">🤡 מימז</button>
                     <button class="effect-btn" data-effect="lasers">🔴 לייזרים</button>
-                    <button class="effect-btn" data-effect="money">💰 כסף מעופף</button>
+                    <button class="effect-btn" data-effect="money">💰 כסף</button>
                 </div>
             </div>
 
             <div class="effect-group">
-                <h3>🎵 אפקטי קול (סימולציה)</h3>
+                <h3>🎪 אפקטים מוזרים</h3>
                 <div class="effect-options">
-                    <button class="effect-btn" data-effect="speed">⚡ מהירות משונה</button>
-                    <button class="effect-btn" data-effect="reverse">⏮️ הפוך</button>
-                </div>
-            </div>
-
-            <div class="effect-group">
-                <h3>🎪 אפקטים מוזרים במיוחד</h3>
-                <div class="effect-options">
-                    <button class="effect-btn" data-effect="eyes">👀 עיניים עוקבות</button>
+                    <button class="effect-btn" data-effect="eyes">👀 עיניים</button>
                     <button class="effect-btn" data-effect="oldfilm">📽️ סרט ישן</button>
                     <button class="effect-btn" data-effect="matrix">🟢 מטריקס</button>
                     <button class="effect-btn" data-effect="disco">🕺 דיסקו</button>
@@ -450,7 +447,7 @@
 
             <div class="slider-group">
                 <label>
-                    <span class="slider-value" id="speedValue">1x</span>
+                    <span class="slider-value" id="speedValue">1.0x</span>
                     מהירות הסרטון
                 </label>
                 <input type="range" id="speedSlider" min="50" max="300" value="100" step="10">
@@ -472,14 +469,6 @@
             <canvas id="canvas"></canvas>
         </div>
 
-        <div class="download-section" id="downloadSection">
-            <h3 style="color: #155724; margin-bottom: 10px;">✅ הסרטון מוכן!</h3>
-            <p style="margin-bottom: 15px;">הסרטון שלך עכשיו יותר מצחיק! 🎉</p>
-            <button class="btn btn-primary" id="downloadBtn">
-                ⬇️ הורד סרטון
-            </button>
-        </div>
-        
         <div class="recording-indicator" id="recordingIndicator">
             <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
                 <div class="recording-dot"></div>
@@ -489,6 +478,8 @@
                 זה עשוי לקחת כמה רגעים
             </div>
         </div>
+
+        <div class="download-section" id="downloadSection"></div>
     </div>
 </div>
 
@@ -497,7 +488,7 @@
     const fileInput = document.getElementById('fileInput');
     const inputVideo = document.getElementById('inputVideo');
     const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const processBtn = document.getElementById('processBtn');
     const resetBtn = document.getElementById('resetBtn');
     const actionButtons = document.getElementById('actionButtons');
@@ -514,6 +505,10 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
+    let frameCount = 0;
+    let particles = [];
+    let eyes = [];
+    let matrixChars = [];
 
     // Upload handlers
     uploadZone.addEventListener('click', () => fileInput.click());
@@ -533,6 +528,8 @@
         const file = e.dataTransfer.files[0];
         if (file && file.type.startsWith('video/')) {
             handleVideoUpload(file);
+        } else {
+            alert('אנא העלה קובץ וידאו תקין');
         }
     });
 
@@ -549,7 +546,15 @@
         inputVideo.src = url;
         inputVideo.style.display = 'block';
         actionButtons.style.display = 'flex';
-        processBtn.disabled = false;
+        
+        inputVideo.onloadedmetadata = () => {
+            processBtn.disabled = false;
+        };
+        
+        inputVideo.onerror = () => {
+            alert('שגיאה בטעינת הסרטון. נסה קובץ אחר.');
+            processBtn.disabled = true;
+        };
     }
 
     // Effect buttons
@@ -578,102 +583,153 @@
 
     // Process video
     processBtn.addEventListener('click', () => {
-        if (!videoFile) return;
+        if (!videoFile || isProcessing) return;
         
+        isProcessing = true;
+        processBtn.disabled = true;
         processing.classList.add('show');
         canvasContainer.style.display = 'none';
         downloadSection.classList.remove('show');
+        downloadSection.innerHTML = '';
 
-        // Simulate processing
+        // Reset state
+        frameCount = 0;
+        particles = [];
+        eyes = [];
+        matrixChars = [];
+
         setTimeout(() => {
             processing.classList.remove('show');
             startVideoProcessing();
-        }, 2000);
+        }, 1500);
     });
 
     function startVideoProcessing() {
+        // Set canvas size
         canvas.width = inputVideo.videoWidth || 640;
         canvas.height = inputVideo.videoHeight || 480;
         canvasContainer.style.display = 'block';
         
-        // Show recording indicator
         const recordingIndicator = document.getElementById('recordingIndicator');
         if (recordingIndicator) {
             recordingIndicator.classList.add('show');
         }
         
-        // Setup recording
-        const stream = canvas.captureStream(30); // 30 FPS
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm;codecs=vp9',
-            videoBitsPerSecond: 2500000
-        });
+        // Check if MediaRecorder is supported
+        let stream;
+        try {
+            stream = canvas.captureStream(30);
+        } catch (e) {
+            alert('הדפדפן שלך לא תומך בהקלטת וידאו. נסה Chrome או Firefox מעודכנים.');
+            isProcessing = false;
+            processBtn.disabled = false;
+            recordingIndicator.classList.remove('show');
+            return;
+        }
+
+        // Determine MIME type
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'video/webm;codecs=vp8';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm';
+            }
+        }
+        
+        try {
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: mimeType,
+                videoBitsPerSecond: 2500000
+            });
+        } catch (e) {
+            alert('שגיאה ביצירת ההקלטה: ' + e.message);
+            isProcessing = false;
+            processBtn.disabled = false;
+            recordingIndicator.classList.remove('show');
+            return;
+        }
         
         recordedChunks = [];
         
         mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
+            if (event.data && event.data.size > 0) {
                 recordedChunks.push(event.data);
             }
         };
         
         mediaRecorder.onstop = () => {
-            // Hide recording indicator
             if (recordingIndicator) {
                 recordingIndicator.classList.remove('show');
             }
             
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            if (recordedChunks.length === 0) {
+                alert('לא הצלחנו להקליט את הסרטון. נסה שוב.');
+                isProcessing = false;
+                processBtn.disabled = false;
+                return;
+            }
+            
+            const blob = new Blob(recordedChunks, { type: mimeType });
             const url = URL.createObjectURL(blob);
             
-            // Show download section with video preview
-            const downloadVideo = document.createElement('video');
-            downloadVideo.src = url;
-            downloadVideo.controls = true;
-            downloadVideo.style.width = '100%';
-            downloadVideo.style.borderRadius = '10px';
-            downloadVideo.style.marginBottom = '15px';
-            
-            const downloadBtn = document.getElementById('downloadBtn');
-            downloadBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `funny-video-${Date.now()}.webm`;
-                a.click();
-            };
-            
             downloadSection.innerHTML = `
-                <h3 style="color: #155724; margin-bottom: 10px;">✅ הסרטון מוכן!</h3>
+                <h3 style="color: #155724; margin-bottom: 15px;">✅ הסרטון מוכן!</h3>
                 <p style="margin-bottom: 15px;">הסרטון שלך עכשיו יותר מצחיק! 🎉</p>
+                <video src="${url}" controls style="width: 100%; border-radius: 10px; margin-bottom: 15px;"></video>
+                <button class="btn btn-primary" onclick="downloadVideo('${url}', '${mimeType}')">
+                    ⬇️ הורד סרטון
+                </button>
             `;
-            downloadSection.appendChild(downloadVideo);
-            
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-primary';
-            btn.innerHTML = '⬇️ הורד סרטון';
-            btn.onclick = downloadBtn.onclick;
-            downloadSection.appendChild(btn);
             
             downloadSection.classList.add('show');
+            isProcessing = false;
+            processBtn.disabled = false;
+        };
+        
+        mediaRecorder.onerror = (e) => {
+            console.error('Recording error:', e);
+            alert('שגיאה בהקלטה. נסה שוב.');
+            isProcessing = false;
+            processBtn.disabled = false;
+            if (recordingIndicator) {
+                recordingIndicator.classList.remove('show');
+            }
         };
         
         inputVideo.currentTime = 0;
-        inputVideo.play();
+        inputVideo.muted = true;
         
-        const speed = speedSlider.value / 100;
-        inputVideo.playbackRate = speed;
+        inputVideo.onended = () => {
+            if (isRecording && mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                isRecording = false;
+            }
+        };
         
-        // Start recording
-        mediaRecorder.start();
-        isRecording = true;
-        
-        renderFrame();
+        inputVideo.play().then(() => {
+            const speed = speedSlider.value / 100;
+            inputVideo.playbackRate = speed;
+            
+            mediaRecorder.start();
+            isRecording = true;
+            
+            renderFrame();
+        }).catch(e => {
+            alert('שגיאה בהפעלת הסרטון: ' + e.message);
+            isProcessing = false;
+            processBtn.disabled = false;
+        });
     }
 
-    let frameCount = 0;
-    let particles = [];
-    let eyes = [];
-    let matrixChars = [];
+    function downloadVideo(url, mimeType) {
+        const a = document.createElement('a');
+        a.href = url;
+        const extension = mimeType.includes('webm') ? 'webm' : 'mp4';
+        a.download = `funny-video-${Date.now()}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
     
     function renderFrame() {
         if (inputVideo.paused || inputVideo.ended) {
@@ -688,9 +744,9 @@
         
         const intensity = intensitySlider.value / 100;
         
-        // Apply effects
         ctx.save();
         
+        // Transform effects
         if (selectedEffects.has('zoom')) {
             const scale = 1 + Math.sin(frameCount * 0.1) * 0.3 * intensity;
             ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -715,22 +771,11 @@
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
         }
         
-        if (selectedEffects.has('fisheye')) {
-            // Draw to temp canvas for fisheye effect
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            tempCtx.drawImage(inputVideo, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            
+        // Draw video
+        try {
             ctx.drawImage(inputVideo, 0, 0, canvas.width, canvas.height);
-        } else {
-            ctx.drawImage(inputVideo, 0, 0, canvas.width, canvas.height);
+        } catch (e) {
+            console.error('Draw error:', e);
         }
         
         if (selectedEffects.has('warp')) {
@@ -742,9 +787,9 @@
             tempCtx.putImageData(imageData, 0, 0);
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let y = 0; y < canvas.height; y++) {
+            for (let y = 0; y < canvas.height; y += 2) {
                 const offset = Math.sin((y + frameCount) * 0.05) * 10 * intensity;
-                ctx.drawImage(tempCanvas, 0, y, canvas.width, 1, offset, y, canvas.width, 1);
+                ctx.drawImage(tempCanvas, 0, y, canvas.width, 2, offset, y, canvas.width, 2);
             }
         }
         
@@ -756,37 +801,33 @@
             ctx.globalCompositeOperation = 'source-over';
         }
         
-        if (selectedEffects.has('glitch')) {
-            if (Math.random() < 0.1 * intensity) {
-                const sliceHeight = 20;
-                const y = Math.random() * canvas.height;
-                const offset = (Math.random() - 0.5) * 50 * intensity;
-                const imageData = ctx.getImageData(0, y, canvas.width, sliceHeight);
-                ctx.putImageData(imageData, offset, y);
-            }
+        if (selectedEffects.has('glitch') && Math.random() < 0.1 * intensity) {
+            const sliceHeight = 20;
+            const y = Math.random() * (canvas.height - sliceHeight);
+            const offset = (Math.random() - 0.5) * 50 * intensity;
+            const imageData = ctx.getImageData(0, y, canvas.width, sliceHeight);
+            ctx.putImageData(imageData, offset, y);
         }
         
         if (selectedEffects.has('pixelate')) {
-            const pixelSize = Math.floor(10 * intensity);
-            if (pixelSize > 1) {
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = canvas.width / pixelSize;
-                tempCanvas.height = canvas.height / pixelSize;
-                tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-                ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
-                ctx.imageSmoothingEnabled = true;
-            }
+            const pixelSize = Math.max(2, Math.floor(10 * intensity));
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = Math.max(1, canvas.width / pixelSize);
+            tempCanvas.height = Math.max(1, canvas.height / pixelSize);
+            tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+            ctx.imageSmoothingEnabled = true;
         }
         
         ctx.restore();
         
-        // Disco effect
+        // Overlay effects
         if (selectedEffects.has('disco')) {
             ctx.globalCompositeOperation = 'lighter';
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 3; i++) {
                 const x = Math.random() * canvas.width;
                 const y = Math.random() * canvas.height;
                 const gradient = ctx.createRadialGradient(x, y, 0, x, y, 100 * intensity);
@@ -798,13 +839,11 @@
             ctx.globalCompositeOperation = 'source-over';
         }
         
-        // Old film effect
         if (selectedEffects.has('oldfilm')) {
             ctx.fillStyle = `rgba(0, 0, 0, ${0.1 * intensity})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Add scratches
-            for (let i = 0; i < 5 * intensity; i++) {
+            for (let i = 0; i < 3 * intensity; i++) {
                 ctx.strokeStyle = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
@@ -812,37 +851,25 @@
                 ctx.lineTo(Math.random() * canvas.width, canvas.height);
                 ctx.stroke();
             }
-            
-            // Add grain
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-            for (let i = 0; i < pixels.length; i += 4) {
-                const noise = (Math.random() - 0.5) * 50 * intensity;
-                pixels[i] += noise;
-                pixels[i + 1] += noise;
-                pixels[i + 2] += noise;
-            }
-            ctx.putImageData(imageData, 0, 0);
         }
         
-        // Matrix effect
         if (selectedEffects.has('matrix')) {
             if (matrixChars.length === 0) {
-                for (let i = 0; i < 50; i++) {
+                for (let i = 0; i < 30; i++) {
                     matrixChars.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        speed: Math.random() * 5 + 2
+                        speed: Math.random() * 3 + 1
                     });
                 }
             }
             
-            ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-            ctx.font = '20px monospace';
+            ctx.fillStyle = `rgba(0, 255, 0, ${0.8 * intensity})`;
+            ctx.font = '16px monospace';
             matrixChars.forEach(char => {
-                const chars = '01アイウエオカキクケコ';
+                const chars = '01アイウ';
                 ctx.fillText(chars[Math.floor(Math.random() * chars.length)], char.x, char.y);
-                char.y += char.speed * intensity;
+                char.y += char.speed;
                 if (char.y > canvas.height) {
                     char.y = 0;
                     char.x = Math.random() * canvas.width;
@@ -850,56 +877,49 @@
             });
         }
         
-        // Add overlays
+        // Particle effects
         if (selectedEffects.has('emojis') && frameCount % 10 === 0) {
-            const emojis = ['😂', '🤣', '😆', '😝', '🤪', '😜', '💀', '🔥'];
-            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-            ctx.font = `${40 * intensity}px Arial`;
-            ctx.fillText(emoji, Math.random() * canvas.width, Math.random() * canvas.height);
+            const emojis = ['😂', '🤣', '😆', '💀'];
+            ctx.font = `${Math.floor(40 * intensity)}px Arial`;
+            ctx.fillText(emojis[Math.floor(Math.random() * emojis.length)], 
+                       Math.random() * canvas.width, Math.random() * canvas.height);
         }
         
         if (selectedEffects.has('explosions') && frameCount % 20 === 0) {
-            ctx.font = `${60 * intensity}px Arial`;
+            ctx.font = `${Math.floor(60 * intensity)}px Arial`;
             ctx.fillText('💥', Math.random() * canvas.width, Math.random() * canvas.height);
         }
         
         if (selectedEffects.has('stars') && frameCount % 5 === 0) {
-            ctx.font = `${30 * intensity}px Arial`;
+            ctx.font = `${Math.floor(30 * intensity)}px Arial`;
             ctx.fillText('⭐', Math.random() * canvas.width, Math.random() * canvas.height);
         }
         
         if (selectedEffects.has('memes')) {
             if (frameCount % 15 === 0) {
-                const memes = ['🤡', '💩', '🍕', '🦄', '🔥', '👻', '🤖'];
+                const memes = ['🤡', '💩', '🍕', '🦄'];
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: canvas.height,
                     emoji: memes[Math.floor(Math.random() * memes.length)],
-                    vy: -2 - Math.random() * 3,
-                    vx: (Math.random() - 0.5) * 2,
-                    rotation: Math.random() * Math.PI * 2,
-                    rotSpeed: (Math.random() - 0.5) * 0.2
+                    vy: -2 - Math.random() * 2,
+                    vx: (Math.random() - 0.5) * 2
                 });
             }
             
             particles = particles.filter(p => p.y > -50);
+            ctx.font = `${Math.floor(40 * intensity)}px Arial`;
             particles.forEach(p => {
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                ctx.font = `${40 * intensity}px Arial`;
-                ctx.fillText(p.emoji, 0, 0);
-                ctx.restore();
+                ctx.fillText(p.emoji, p.x, p.y);
                 p.y += p.vy;
                 p.x += p.vx;
-                p.rotation += p.rotSpeed;
             });
         }
         
         if (selectedEffects.has('lasers')) {
-            for (let i = 0; i < 3 * intensity; i++) {
+            for (let i = 0; i < Math.floor(3 * intensity); i++) {
                 ctx.strokeStyle = `rgba(255, 0, 0, ${Math.random() * 0.8})`;
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
                 ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
@@ -908,85 +928,66 @@
         }
         
         if (selectedEffects.has('money') && frameCount % 8 === 0) {
-            const money = ['💵', '💴', '💶', '💷', '💰', '🤑'];
-            ctx.font = `${35 * intensity}px Arial`;
+            const money = ['💵', '💰'];
+            ctx.font = `${Math.floor(35 * intensity)}px Arial`;
             ctx.fillText(money[Math.floor(Math.random() * money.length)], 
                        Math.random() * canvas.width, Math.random() * canvas.height);
         }
         
         if (selectedEffects.has('alien') && frameCount % 30 === 0) {
-            ctx.font = `${50 * intensity}px Arial`;
-            const aliens = ['👽', '🛸', '🌌'];
+            ctx.font = `${Math.floor(50 * intensity)}px Arial`;
+            const aliens = ['👽', '🛸'];
             ctx.fillText(aliens[Math.floor(Math.random() * aliens.length)], 
                        Math.random() * canvas.width, Math.random() * canvas.height);
         }
         
         if (selectedEffects.has('eyes')) {
             if (eyes.length === 0) {
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 8; i++) {
                     eyes.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        size: 20 + Math.random() * 30
+                        size: 20 + Math.random() * 20
                     });
                 }
             }
             
+            ctx.font = `${Math.floor(25 * intensity)}px Arial`;
             eyes.forEach(eye => {
-                ctx.save();
-                ctx.translate(eye.x, eye.y);
-                const angle = Math.atan2(canvas.height/2 - eye.y, canvas.width/2 - eye.x);
-                ctx.rotate(angle);
-                ctx.font = `${eye.size * intensity}px Arial`;
-                ctx.fillText('👁️', 0, 0);
-                ctx.restore();
+                ctx.fillText('👁️', eye.x, eye.y);
             });
         }
         
         if (selectedEffects.has('bruh')) {
-            ctx.font = `bold ${60 * intensity}px Impact`;
+            ctx.font = `bold ${Math.floor(60 * intensity)}px Impact, Arial`;
             ctx.fillStyle = 'white';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
-            const bruhTexts = ['BRUH', 'NO WAY', 'WHAT', 'OMG', 'BRO'];
+            const bruhTexts = ['BRUH', 'NO WAY', 'OMG'];
             const text = bruhTexts[Math.floor(frameCount / 40) % bruhTexts.length];
-            const x = canvas.width / 2 - ctx.measureText(text).width / 2;
+            const x = (canvas.width - ctx.measureText(text).width) / 2;
             ctx.strokeText(text, x, 60);
             ctx.fillText(text, x, 60);
         }
         
         if (selectedEffects.has('mlg')) {
-            // MLG style effects
             if (frameCount % 20 === 0) {
-                ctx.font = `bold ${40 * intensity}px Impact`;
-                ctx.fillStyle = ['#00ff00', '#ff0000', '#0000ff', '#ffff00'][Math.floor(Math.random() * 4)];
+                ctx.font = `bold ${Math.floor(40 * intensity)}px Impact, Arial`;
+                ctx.fillStyle = ['#00ff00', '#ff0000', '#ffff00'][Math.floor(Math.random() * 3)];
                 ctx.strokeStyle = 'black';
                 ctx.lineWidth = 2;
-                const mlgTexts = ['360 NO SCOPE', 'MLG PRO', 'WOMBO COMBO', 'OH BABY A TRIPLE'];
+                const mlgTexts = ['MLG', 'PRO', 'EPIC'];
                 const text = mlgTexts[Math.floor(Math.random() * mlgTexts.length)];
-                const x = Math.random() * (canvas.width - 200);
+                const x = Math.random() * (canvas.width - 150);
                 const y = Math.random() * (canvas.height - 100) + 50;
                 ctx.strokeText(text, x, y);
                 ctx.fillText(text, x, y);
             }
-            
-            // Add lens flares
-            ctx.globalCompositeOperation = 'lighter';
-            for (let i = 0; i < 3; i++) {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                const gradient = ctx.createRadialGradient(x, y, 0, x, y, 50);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-                gradient.addColorStop(1, 'transparent');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-            ctx.globalCompositeOperation = 'source-over';
         }
         
         if (selectedEffects.has('text')) {
-            const texts = ['LOL', 'OMG', 'WOW', 'HAHA', '😂😂😂', 'EPIC'];
-            ctx.font = 'bold 40px Arial';
+            const texts = ['LOL', 'WOW', 'HAHA'];
+            ctx.font = `bold ${Math.floor(40 * intensity)}px Arial`;
             ctx.fillStyle = 'yellow';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
@@ -1000,12 +1001,17 @@
     }
 
     resetBtn.addEventListener('click', () => {
-        particles = [];
-        eyes = [];
-        matrixChars = [];
         if (mediaRecorder && mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
         }
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+        particles = [];
+        eyes = [];
+        matrixChars = [];
+        selectedEffects.clear();
+        document.querySelectorAll('.effect-btn').forEach(btn => btn.classList.remove('active'));
         location.reload();
     });
 </script>
